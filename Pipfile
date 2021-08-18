@@ -4,9 +4,22 @@ verify_ssl = true
 name = "pypi"
 
 [packages]
-django = "*"
-djangorestframework = "*"
-pillow = "*"
+djangorestframework = "==3.12.4"
+pillow = "==8.3.1"
+asgiref = "==3.4.1"
+pytz = "==2021.1"
+sqlparse = "==0.4.1"
+cffi = "==1.14.0"
+cryptography = "==2.9.2"
+django-filter = "==2.3.0"
+django-rest-knox = "==4.1.0"
+django-rest-passwordreset = "==1.1.0"
+importlib-metadata = "==1.7.0"
+pycparser = "==2.20"
+six = "==1.15.0"
+zipp = "==3.1.0"
+Django = "==3.2.6"
+Markdown = "==3.2.2"
 
 [dev-packages]
 
