@@ -5,7 +5,18 @@ from django.db.models.fields.files import ImageField
 from django.dispatch import receiver
 from django.urls import reverse
 from django_rest_passwordreset.signals import reset_password_token_created
-from django.core.mail import send_mail  
+from django.core.mail import send_mail
+
+class Extendeduser(models.Model):
+    User = models.ForeignKey(User,on_delete=models.CASCADE)
+    Profile = models.OneToOneField('Image', on_delete=models.CASCADE)
+    Phone = models.CharField(max_length=15)
+    Created_at = models.DateTimeField(auto_now_add=True)
+    Updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f'{self.User}'
+
 
 
 @receiver(reset_password_token_created)
@@ -34,36 +45,39 @@ COLOR_CHOICES =[
     ('purple','Purple'),
     ('black','Black')
 ]
+
 def user_directory_path(instance, filename):
     return 'images/{0}'.format(filename)
 
-class Label(models.Model):
-    Name = models.CharField(max_length=20)
-
 class Image(models.Model):
-    Title = models.CharField(max_length=250)
+    Name = models.CharField(max_length=250)
     Alt = models.TextField(null=True)
-    image = models.ImageField(upload_to=user_directory_path, default='notes/default.jpg ')
+    Image = models.ImageField(upload_to=user_directory_path, default='notes/default.jpg')
+
+    def __str__(self):
+        return f'{self.Name}'
 
 class ListItem(models.Model):
     Name = models.CharField(max_length=250)
     Done = models.BooleanField(default=False)
-    Position = models.IntegerField(default=1)
+    
+    def __str__(self):
+        return f'{self.Name}'
 
 
 class List(models.Model):
-    Items = models.ManyToManyField(ListItem)
+    Items = models.ManyToManyField(ListItem, related_name='Lists')
     
+    def __str__(self):
+        return f'{self.Items}'
 
 class Note(models.Model):
     Title = models.CharField(max_length=50)
-    User = models.ForeignKey(User, on_delete=models.CASCADE)
-    Lists = models.ForeignKey(List,on_delete=models.CASCADE)
-    Labels = models.ManyToManyField(Label)
+    User = models.ForeignKey(Extendeduser, on_delete=models.CASCADE)
+    List = models.ForeignKey(List,on_delete=models.CASCADE)
+    Labels = models.CharField(max_length=30)
     Images = models.ManyToManyField(Image, related_name='Notes')
-    Background_image = models.ForeignKey(Image, on_delete=models.CASCADE, default=None)
     Background_color = models.CharField(max_length=20, choices=COLOR_CHOICES, default=None)
-    Position = models.IntegerField()
     Description = models.TextField()
     Reminder = models.DateTimeField()
     Created_at = models.DateTimeField(auto_now_add=True)
@@ -71,5 +85,11 @@ class Note(models.Model):
 
     def __str__(self):
         return f'{self.Title}:{self.User}'
+
+    @property
+    def Labels_list(self):
+        labels = self.Labels
+        labels_list = labels.split(',')
+        return labels_list
 
 

@@ -4,4 +4,7 @@ from .models import *
 admin.site.register(Note)
 admin.site.register(List)
 admin.site.register(Image)
-admin.site.register(Label)
+admin.site.register(Extendeduser)
+admin.site.register(ListItem)
+
+

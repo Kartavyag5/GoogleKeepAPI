@@ -1,17 +1,17 @@
 from django.shortcuts import render
-
 from django.contrib.auth import login
-
+from django.contrib.auth.models import User
 from rest_framework.authtoken.serializers import AuthTokenSerializer
 from knox.views import LoginView as KnoxLoginView
-
-from rest_framework import generics, permissions
+from rest_framework import generics, permissions, status
 from rest_framework.response import Response
 from knox.models import AuthToken
-from .serializers import UserSerializer, RegisterSerializer, ChangePasswordSerializer
+from .serializers import *
 from django.views.decorators.debug import sensitive_post_parameters
-
 from rest_framework.views import APIView
+from rest_framework.viewsets import ModelViewSet, ViewSet
+from rest_framework.filters import SearchFilter,OrderingFilter
+
 
 # Register API
 class RegisterAPI(generics.GenericAPIView):
@@ -45,23 +45,11 @@ class UserAPI(generics.RetrieveAPIView):
     def get_object(self):
         return self.request.user
 
-from rest_framework import generics, permissions
-
-# Change Password
-from rest_framework import status
-from rest_framework import generics
-from rest_framework.response import Response
-from django.contrib.auth.models import User
-from .serializers import ChangePasswordSerializer
-from rest_framework.permissions import IsAuthenticated   
 
 class ChangePasswordView(generics.UpdateAPIView):
-    """
-    An endpoint for changing password.
-    """
     serializer_class = ChangePasswordSerializer
     model = User
-    permission_classes = (IsAuthenticated,)
+    permission_classes = (permissions.IsAuthenticated,)
 
     def get_object(self, queryset=None):
         obj = self.request.user
@@ -88,4 +76,19 @@ class ChangePasswordView(generics.UpdateAPIView):
             return Response(response)
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class NoteViewSet(ModelViewSet):
+    serializer_class =NoteSerializer
+    queryset = Note.objects.all()
+    filter_backends = [SearchFilter,OrderingFilter]
+    search_fields = ['^Title',]
+    ordering_fields =['Title',]
+
+class UserViewSet(ModelViewSet):
+    serializer_class = ExtendeduserSerializer
+    queryset = Extendeduser.objects.all()
+    filter_backends = [SearchFilter,OrderingFilter]
+    search_fields = ['^username',]
+    ordering_fields = ['username',]
 
