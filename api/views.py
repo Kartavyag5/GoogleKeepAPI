@@ -83,12 +83,13 @@ class NoteViewSet(ModelViewSet):
     queryset = Note.objects.all()
     filter_backends = [SearchFilter,OrderingFilter]
     search_fields = ['^Title',]
-    ordering_fields =['Title',]
+    ordering_fields =['Title','Created_at','Updated_at']
 
 class UserViewSet(ModelViewSet):
     serializer_class = ExtendeduserSerializer
+    permission_classes = [permissions.IsAuthenticated,]
     queryset = Extendeduser.objects.all()
     filter_backends = [SearchFilter,OrderingFilter]
-    search_fields = ['^username',]
-    ordering_fields = ['username',]
+    search_fields = ['^username','^email','^Created_at','^Updated_at']
+    ordering_fields = ['username','Created_at','Updated_at']
 

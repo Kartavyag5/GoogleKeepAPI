@@ -7,7 +7,7 @@ from .models import *
 class ImageSerializer(serializers.ModelSerializer):
     class Meta:
         model = Image
-        fields = ('id', 'Name', 'Image', 'Alt')
+        fields = ('Image',)
 
 # User Serializer
 
@@ -18,10 +18,10 @@ class UserSerializer(serializers.ModelSerializer):
 
 class ExtendeduserSerializer(serializers.ModelSerializer):
     User = UserSerializer()
-    Profile = ImageSerializer()
+    
     class Meta:
         model = Extendeduser
-        fields = ('User','Phone','Profile')
+        fields = ('User','Phone','Profile','Created_at','Updated_at')
 
 # Register Serializer
 class RegisterSerializer(serializers.ModelSerializer):
@@ -50,21 +50,17 @@ class ListItemsSerializer(serializers.ModelSerializer):
         fields = ('Name','Done')
 
 class ListSerializer(serializers.ModelSerializer):
+    Items = ListItemsSerializer(many=True)
     class Meta:
         model = List
-        ListItems = ListItemsSerializer(many=True)
-        fields = ('Items','ListItems')
-
-class ImageSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Image
-        fields = ('Name','Image','Alt')
+        fields = ('Title','Items')
 
 class NoteSerializer(serializers.ModelSerializer):
+    User = ExtendeduserSerializer()
+    Images = ImageSerializer(many=True)
+    List = ListSerializer()
+
     class Meta:
         model = Note
-        User = UserSerializer()
-        Images = ImageSerializer(many=True)
-        List = ListSerializer()
         Labels = fields.Field(source = 'Labels_list')
-        fields = ('id','Title','Description','List','Labels_list','Images','Background_color','Reminder','Created_at','Updated_at')
+        fields = ('id','Title','Description','User','List','Labels_list','Images','Background_color','Reminder','Created_at','Updated_at')
