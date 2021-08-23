@@ -26,7 +26,7 @@ SECRET_KEY = 'django-insecure-q%4*sxk7hinl9mfn&13uif5q45^$vp(_+#!xw58uk^##=_=9tb
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['note-drf-api.herokuapp.com','127.0.0.1']
 
 
 # Application definition
@@ -35,7 +35,6 @@ INSTALLED_APPS = [
     'api',
     'rest_framework',
     'knox',
-    'django_rest_passwordreset',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -45,6 +44,7 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -133,12 +133,17 @@ MEDIA_URL = '/media/'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-REST_FRAMEWORK = {
-    'DEFAULT_AUTHENTICATION_CLASSES': [
-        'rest_framework.authentication.BasicAuthentication',
-        # 'rest_framework.authentication.SessionAuthentication',
-        'knox.auth.TokenAuthentication',
-    ]
-}
+# REST_FRAMEWORK = {
+#     'DEFAULT_AUTHENTICATION_CLASSES': [
+#         'rest_framework.authentication.BasicAuthentication',
+#         # 'rest_framework.authentication.SessionAuthentication',
+#         #'knox.auth.TokenAuthentication',
+#     ],
 
-EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+# #     'DEFAULT_PERMISSION_CLASSES': [
+# #         'rest_framework.permissions.IsAdminUser',
+# #         'api.permissions.IsOwner',
+# #     ]
+# }
+
+

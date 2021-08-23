@@ -3,16 +3,13 @@ from django.contrib.auth.models import User
 from django.db.models.fields.files import ImageField
 from django.dispatch import receiver
 from django.urls import reverse
-from django_rest_passwordreset.signals import reset_password_token_created
 from django.core.mail import send_mail
 from django.utils import timezone
 
 #this is for rename the profile images with username
 def user_directory_path(instance, filename):
     extension = filename.split('.')[-1]
-    og_filename = filename.split('.')[0]
     new_filename = "images/profiles/Profile_%s.%s" % (instance.User, extension)
-
     return new_filename
 
 # this model adds some extra fields to Django User model.
@@ -27,22 +24,8 @@ class Extendeduser(models.Model):
         return f'{self.User}'
 
 
-@receiver(reset_password_token_created)
-def password_reset_token_created(sender, instance, reset_password_token, *args, **kwargs):
 
-    email_plaintext_message = "{}?token={}".format(reverse('password_reset:reset-password-request'), reset_password_token.key)
-
-    send_mail(
-        # title:
-        "Password Reset for {username}".format(username=reset_password_token.user.username),
-        # message:
-        email_plaintext_message,
-        # from:
-        "noreply@somehost.local",
-        # to:
-        [reset_password_token.user.email]
-    )
-
+#for choose Background color
 COLOR_CHOICES =[
     ('white','White'),
     ('red','Red'),
@@ -55,7 +38,7 @@ COLOR_CHOICES =[
 ]
 
     
-# this is for image rename to
+# this is for image rename
 def user_directory_path2(instance, filename):
     new_filename = "images/Note_%s" % (instance.Image)
     return new_filename

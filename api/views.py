@@ -1,4 +1,5 @@
-from django.shortcuts import render
+from django.db.models.query import QuerySet
+from django.shortcuts import redirect, render
 from django.contrib.auth import login
 from django.contrib.auth.models import User
 from rest_framework.authtoken.serializers import AuthTokenSerializer
@@ -11,6 +12,8 @@ from django.views.decorators.debug import sensitive_post_parameters
 from rest_framework.views import APIView
 from rest_framework.viewsets import ModelViewSet, ViewSet
 from rest_framework.filters import SearchFilter,OrderingFilter
+from api.permissions import IsOwner
+from rest_framework.authentication import BasicAuthentication
 
 
 # Register API
@@ -27,7 +30,9 @@ class RegisterAPI(generics.GenericAPIView):
         })
 
 # Login API
-class LoginAPI(KnoxLoginView):
+class LoginViewSet(ViewSet):
+    serializer_class = loginSerializer
+    
     permission_classes = (permissions.AllowAny,)
 
     def post(self, request, format=None):
@@ -35,21 +40,31 @@ class LoginAPI(KnoxLoginView):
         serializer.is_valid(raise_exception=True)
         user = serializer.validated_data['user']
         login(request, user)
-        return super(LoginAPI, self).post(request, format=None)
+        return super(Login, self).post(request, format=None)
+        
+# get all notes created by logged in user
+class NoteViewSet(ModelViewSet):
+    serializer_class =NoteSerializer
+    queryset = Note.objects.all()
+    authentication_classes = [BasicAuthentication,]
+    permission_classes = [permissions.IsAuthenticated,]
+    filter_backends = [SearchFilter,OrderingFilter]
+    search_fields = ['^Title',]
+    ordering_fields =['Title','Created_at','Updated_at']
 
 # Get User API
-class UserAPI(generics.RetrieveAPIView):
-    permission_classes = [permissions.IsAuthenticated,]
-    serializer_class = UserSerializer
-
-    def get_object(self):
-        return self.request.user
-
+class UserViewSet(ModelViewSet):
+    serializer_class = ExtendeduserSerializer
+    permission_classes = [IsOwner,]
+    queryset = Extendeduser.objects.all()
+    filter_backends = [SearchFilter,OrderingFilter]
+    search_fields = ['^username','^email','^Created_at','^Updated_at']
+    ordering_fields = ['username','Created_at','Updated_at']
 
 class ChangePasswordView(generics.UpdateAPIView):
     serializer_class = ChangePasswordSerializer
     model = User
-    permission_classes = (permissions.IsAuthenticated,)
+    permission_classes = (IsOwner,)
 
     def get_object(self, queryset=None):
         obj = self.request.user
@@ -78,18 +93,5 @@ class ChangePasswordView(generics.UpdateAPIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-class NoteViewSet(ModelViewSet):
-    serializer_class =NoteSerializer
-    queryset = Note.objects.all()
-    filter_backends = [SearchFilter,OrderingFilter]
-    search_fields = ['^Title',]
-    ordering_fields =['Title','Created_at','Updated_at']
 
-class UserViewSet(ModelViewSet):
-    serializer_class = ExtendeduserSerializer
-    permission_classes = [permissions.IsAuthenticated,]
-    queryset = Extendeduser.objects.all()
-    filter_backends = [SearchFilter,OrderingFilter]
-    search_fields = ['^username','^email','^Created_at','^Updated_at']
-    ordering_fields = ['username','Created_at','Updated_at']
 
