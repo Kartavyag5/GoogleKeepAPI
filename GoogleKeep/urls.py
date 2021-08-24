@@ -10,7 +10,8 @@ router = DefaultRouter()
 router.register('NoteAPI',views.NoteViewSet, basename='Note')
 
 router.register('UserAPI',views.UserViewSet, basename='User')
-router.register('LoginAPI',views.LoginViewSet, basename='Login')
+router.register('ExtendedUserAPI',views.ExtendedUserViewSet, basename='ExtendedUser')
+
 
 urlpatterns = [
     path('admin/', admin.site.urls),

@@ -4,6 +4,42 @@ from rest_framework import generics, permissions
 from django.contrib.auth.models import User
 from .models import *
 
+# this is for testing purpose
+
+class RegistrationSerializer(serializers.ModelSerializer):
+    email = serializers.EmailField(max_length=50, min_length=6)
+    username = serializers.CharField(max_length=50, min_length=6)
+    password = serializers.CharField(max_length=150, write_only=True)
+
+    class Meta:
+        model = User
+        fields = ('id', 'first_name', 'last_name', 'email', 'username', 'password')
+
+    def validate(self, args):
+        email = args.get('email', None)
+        username = args.get('username', None)
+        if User.objects.filter(email=email).exists():
+            raise serializers.ValidationError({'email': ('email already exists')})
+        if User.objects.filter(username=username).exists():
+            raise serializers.ValidationError({'username': ('username already exists')})
+
+        return super().validate(args)
+  
+
+    def create(self, validated_data):
+        return User.objects.create_user(**validated_data)
+    
+
+class loginSerializer(serializers.ModelSerializer):
+    username = serializers.CharField(max_length=50, min_length=6)
+    password = serializers.CharField(max_length=150, write_only=True)
+
+    class Meta:
+        model = User
+        fields = ('username','password')
+
+#-----------------------------------------------------------
+
 
 class ImageSerializer(serializers.ModelSerializer):
     class Meta:
@@ -14,8 +50,8 @@ class ImageSerializer(serializers.ModelSerializer):
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ('id', 'username', 'email')
-
+        fields = ('id', 'username', 'email','password')
+        
 
 # this model is for adding more fields in Django User model
 class ExtendeduserSerializer(serializers.ModelSerializer):
@@ -28,23 +64,23 @@ class ExtendeduserSerializer(serializers.ModelSerializer):
 # Register Serializer
 
 
-class RegisterSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = User
-        fields = ('id', 'username', 'email', 'password')
-        extra_kwargs = {'password': {'write_only': True}}
+# class RegisterSerializer(serializers.ModelSerializer):
+#     class Meta:
+#         model = User
+#         fields = ('id', 'username', 'email', 'password')
+#         extra_kwargs = {'password': {'write_only': True}}
 
-    def create(self, validated_data):
-        user = User.objects.create_user(
-            validated_data['username'], validated_data['email'], validated_data['password'])
-        return user
+#     def create(self, validated_data):
+#         user = User.objects.create_user(
+#             validated_data['username'], validated_data['email'], validated_data['password'])
+#         return user
 
 
-class loginSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = User
-        fields = ('username', 'password')
-        extra_kwargs = {'password': {'write_only': True}}
+# class loginSerializer(serializers.ModelSerializer):
+#     class Meta:
+#         model = User
+#         fields = ('username', 'password')
+#         extra_kwargs = {'password': {'write_only': True}}
 
 
 class ChangePasswordSerializer(serializers.Serializer):

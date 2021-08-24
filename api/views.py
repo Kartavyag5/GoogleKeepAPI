@@ -15,51 +15,104 @@ from rest_framework.filters import SearchFilter,OrderingFilter
 from api.permissions import IsOwner
 from rest_framework.authentication import BasicAuthentication
 
+# this part is testing purpose
 
-# Register API
-class RegisterAPI(generics.GenericAPIView):
-    serializer_class = RegisterSerializer
+class RegistrationAPIView(generics.GenericAPIView):
 
-    def post(self, request, *args, **kwargs):
-        serializer = self.get_serializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        user = serializer.save()
-        return Response({
-        "user": UserSerializer(user, context=self.get_serializer_context()).data,
-        "token": AuthToken.objects.create(user)[1]
-        })
+    serializer_class = RegistrationSerializer
+    filter_backends = [SearchFilter,OrderingFilter]
+    ordering_fields = '__all__'
+    search_fields = '__all__'
 
-# Login API
-class LoginViewSet(ViewSet):
-    serializer_class = loginSerializer
+    def post(self, request):
+        serializer = self.get_serializer(data = request.data)
+        if(serializer.is_valid()):
+            serializer.save()
+            return Response({
+                
+                "Message": "User created successfully",
+                
+                "User": serializer.data}, status=status.HTTP_201_CREATED
+                )
+        
+        return Response({"Errors": serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
+
+
+class ListUser(generics.ListCreateAPIView):
+    permission_classes = (permissions.IsAdminUser,)
+    queryset = User.objects.all()
+    serializer_class = UserSerializer
+    filter_backends = [SearchFilter,OrderingFilter]
+    search_fields = '__all__'
+    ordering_fields = '__all__'
+
+class DetailUser(generics.RetrieveUpdateDestroyAPIView):
+    permission_classes = (permissions.IsAdminUser, IsOwner)
+    queryset = User.objects.all()
+    serializer_class = UserSerializer
+    filter_backends = [SearchFilter,OrderingFilter]
+    #search_fields = '__all__'
+    #ordering_fields = '__all__'
+
+#----------------------------------------------------------------------
+# # Register API
+# class RegisterAPI(generics.GenericAPIView):
+#     serializer_class = RegisterSerializer
+
+#     def post(self, request, *args, **kwargs):
+#         serializer = self.get_serializer(data=request.data)
+#         serializer.is_valid(raise_exception=True)
+#         user = serializer.save()
+#         return Response({
+#         "user": UserSerializer(user, context=self.get_serializer_context()).data,
+#         "token": AuthToken.objects.create(user)[1]
+#         })
+
+# # Login API
+# class LoginViewSet(ViewSet):
+#     serializer_class = loginSerializer
     
-    permission_classes = (permissions.AllowAny,)
+#     permission_classes = (permissions.AllowAny,)
 
-    def post(self, request, format=None):
-        serializer = AuthTokenSerializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        user = serializer.validated_data['user']
-        login(request, user)
-        return super(Login, self).post(request, format=None)
+#     def post(self, request, format=None):
+#         serializer = AuthTokenSerializer(data=request.data)
+#         serializer.is_valid(raise_exception=True)
+#         user = serializer.validated_data['user']
+#         login(request, user)
+#         return super(Login, self).post(request, format=None)
+
         
 # get all notes created by logged in user
 class NoteViewSet(ModelViewSet):
     serializer_class =NoteSerializer
     queryset = Note.objects.all()
-    authentication_classes = [BasicAuthentication,]
-    permission_classes = [permissions.IsAuthenticated,]
+    permission_classes = [IsOwner,permissions.IsAuthenticated]
     filter_backends = [SearchFilter,OrderingFilter]
     search_fields = ['^Title',]
     ordering_fields =['Title','Created_at','Updated_at']
 
+
+
 # Get User API
 class UserViewSet(ModelViewSet):
+    serializer_class = UserSerializer
+    permission_classes = [IsOwner,]
+    queryset = User.objects.all()
+    filter_backends = [SearchFilter,OrderingFilter]
+    search_fields = ['^username','^email']
+    ordering_fields = ['username',]
+
+
+class ExtendedUserViewSet(ModelViewSet):
     serializer_class = ExtendeduserSerializer
     permission_classes = [IsOwner,]
     queryset = Extendeduser.objects.all()
     filter_backends = [SearchFilter,OrderingFilter]
     search_fields = ['^username','^email','^Created_at','^Updated_at']
     ordering_fields = ['username','Created_at','Updated_at']
+
+
+
 
 class ChangePasswordView(generics.UpdateAPIView):
     serializer_class = ChangePasswordSerializer
