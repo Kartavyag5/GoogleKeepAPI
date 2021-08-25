@@ -43,36 +43,43 @@ def user_directory_path2(instance, filename):
     return new_filename
 
 
+class ImageList(models.Model):
+    Title = models.CharField(max_length=30,default='Image-list')
+
+    def __str__(self):
+        return f'{self.Title}'
+
 class Image(models.Model):
+    ImageList = models.OneToOneField(ImageList,on_delete=models.CASCADE,default=None)
     Image = models.ImageField(upload_to=user_directory_path2, default='notes/default.jpg')
 
     def __str__(self):
-        return f'{self.Image}'
-
-class ListItem(models.Model):
-    Name = models.CharField(max_length=250)
-    Done = models.BooleanField(default=False)
-    
-    def __str__(self):
-        return f'{self.Name}'
-
+        return f'{self.ImageList}: {self.Image}'
 
 class List(models.Model):
     Title = models.CharField(max_length=30,default='Task-list')
-    Items = models.ManyToManyField(ListItem, related_name='Lists')
     
     def __str__(self):
         return f'List: {self.Title}'
 
+class ListItem(models.Model):
+    List = models.ForeignKey(List, on_delete=models.CASCADE, default=None)
+    Task = models.CharField(max_length=30, default='task')
+    Done = models.BooleanField(default=False)
+    
+    def __str__(self):
+        return f'{self.List}: {self.Task}'
+        
+
 class Note(models.Model):
     Title = models.CharField(max_length=50)
-    User = models.ForeignKey(Extendeduser, on_delete=models.CASCADE)
+    User = models.ForeignKey(User, on_delete=models.CASCADE)
     List = models.ForeignKey(List, on_delete=models.CASCADE)
-    Labels = models.CharField(max_length=30)
-    Images = models.ManyToManyField(Image, related_name='Notes', default=None)
+    ImageList = models.ForeignKey(ImageList, on_delete=models.CASCADE, default=None)
+    Labels = models.CharField(max_length=30, null=True)
     Background_color = models.CharField(max_length=20, choices=COLOR_CHOICES, default='white')
     Description = models.TextField()
-    Reminder = models.DateTimeField(default=None)
+    Reminder = models.DateTimeField(default=None, null=True)
     Created_at = models.DateTimeField(auto_now_add=True)
     Updated_at = models.DateTimeField(auto_now=True)
 

@@ -8,9 +8,13 @@ from api import views
 router = DefaultRouter()
 
 router.register('NoteAPI',views.NoteViewSet, basename='Note')
+router.register('ListAPI',views.ListViewSet, basename='List')
+router.register('ListItemAPI',views.ListItemViewSet, basename='ListItem')
+router.register('ImageAPI',views.ImageViewSet, basename='Image')
+router.register('ImageListAPI',views.ImageListViewSet, basename='ImageList')
 
 router.register('UserAPI',views.UserViewSet, basename='User')
-router.register('ExtendedUserAPI',views.ExtendedUserViewSet, basename='ExtendedUser')
+router.register('RegisterAPI',views.RegisterViewSet, basename='Register')
 
 
 urlpatterns = [

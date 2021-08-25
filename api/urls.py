@@ -4,8 +4,8 @@ from django.urls import path
 
 urlpatterns = [
     
-    path('users/registration',RegistrationAPIView.as_view(), name='registration'),
+    # path('users/registration',RegistrationAPIView.as_view(), name='registration'),
 
-    path('change-password/', ChangePasswordView.as_view(), name='change-password'),
+    # path('change-password/', ChangePasswordView.as_view(), name='change-password'),
    
 ]
