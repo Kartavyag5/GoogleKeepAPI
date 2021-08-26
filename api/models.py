@@ -50,7 +50,7 @@ class ImageList(models.Model):
         return f'{self.Title}'
 
 class Image(models.Model):
-    ImageList = models.OneToOneField(ImageList,on_delete=models.CASCADE,default=None)
+    ImageList = models.ForeignKey(ImageList,on_delete=models.CASCADE,default=None)
     Image = models.ImageField(upload_to=user_directory_path2, default='notes/default.jpg')
 
     def __str__(self):
@@ -60,7 +60,7 @@ class List(models.Model):
     Title = models.CharField(max_length=30,default='Task-list')
     
     def __str__(self):
-        return f'List: {self.Title}'
+        return f'{self.Title}'
 
 class ListItem(models.Model):
     List = models.ForeignKey(List, on_delete=models.CASCADE, default=None)

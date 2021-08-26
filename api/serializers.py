@@ -4,42 +4,6 @@ from rest_framework import generics, permissions
 from django.contrib.auth.models import User
 from .models import *
 
-# this is for testing purpose
-
-# class RegistrationSerializer(serializers.ModelSerializer):
-#     email = serializers.EmailField(max_length=50, min_length=6)
-#     username = serializers.CharField(max_length=50, min_length=6)
-#     password = serializers.CharField(max_length=150, write_only=True)
-
-#     class Meta:
-#         model = User
-#         fields = ('id', 'first_name', 'last_name', 'email', 'username', 'password')
-
-#     def validate(self, args):
-#         email = args.get('email', None)
-#         username = args.get('username', None)
-#         if User.objects.filter(email=email).exists():
-#             raise serializers.ValidationError({'email': ('email already exists')})
-#         if User.objects.filter(username=username).exists():
-#             raise serializers.ValidationError({'username': ('username already exists')})
-
-#         return super().validate(args)
-  
-
-#     def create(self, validated_data):
-#         return User.objects.create_user(**validated_data)
-    
-
-# class loginSerializer(serializers.ModelSerializer):
-#     username = serializers.CharField(max_length=50, min_length=6)
-#     password = serializers.CharField(max_length=150, write_only=True)
-
-#     class Meta:
-#         model = User
-#         fields = ('username','password')
-
-#-----------------------------------------------------------
-
 
 class ImageSerializer(serializers.ModelSerializer):
     class Meta:
@@ -50,20 +14,20 @@ class ImageSerializer(serializers.ModelSerializer):
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ('id', 'username', 'email','password')
-        
+        fields = ('id', 'username', 'email')
+        #extra_kwargs = {'password': {'write_only': True}}
+
 
 # this model is for adding more fields in Django User model
 class ExtendeduserSerializer(serializers.ModelSerializer):
-    User = UserSerializer()
+    User = UserSerializer(read_only=True)
 
     class Meta:
         model = Extendeduser
         fields = ('User', 'Phone', 'Profile', 'Created_at', 'Updated_at')
 
+
 # Register Serializer
-
-
 class RegisterSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
@@ -76,11 +40,11 @@ class RegisterSerializer(serializers.ModelSerializer):
         return user
 
 
-# class loginSerializer(serializers.ModelSerializer):
-#     class Meta:
-#         model = User
-#         fields = ('username', 'password')
-#         extra_kwargs = {'password': {'write_only': True}}
+class loginSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ('username', 'password')
+        extra_kwargs = {'password': {'write_only': True}}
 
 
 class ChangePasswordSerializer(serializers.Serializer):
@@ -94,14 +58,14 @@ class ChangePasswordSerializer(serializers.Serializer):
 class ListSerializer(serializers.ModelSerializer):
     class Meta:
         model = List
-        fields = ('Title',)
+        fields = ('id','Title',)
 
 
 class ListItemsSerializer(serializers.ModelSerializer):
-    
     class Meta:
         model = ListItem
-        fields = ('List','Task', 'Done')
+        fields = ('List','id','Task', 'Done')
+
 
 class ImageListSerializer(serializers.ModelSerializer):
     class Meta:
@@ -114,14 +78,6 @@ class ImageSerializer(serializers.ModelSerializer):
         model = Image
         fields = ('ImageList','Image')
 
-
-
-# class ListSerializer(serializers.ModelSerializer):
-#     Items = ListItemsSerializer(many=True)
-
-#     class Meta:
-#         model = List
-#         fields = ('Title', 'Items')
 
 
 class NoteSerializer(serializers.ModelSerializer):
