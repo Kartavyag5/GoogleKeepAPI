@@ -26,26 +26,51 @@ class ExtendeduserSerializer(serializers.ModelSerializer):
         model = Extendeduser
         fields = ('User', 'Phone', 'Profile', 'Created_at', 'Updated_at')
 
-
+# this is login and jwt authentication section
 # Register Serializer
-class RegisterSerializer(serializers.ModelSerializer):
+# class RegisterSerializer(serializers.ModelSerializer):
+#     class Meta:
+#         model = User
+#         fields = ('id', 'username', 'email', 'password')
+#         extra_kwargs = {'password': {'write_only': True}}
+
+#     def create(self, validated_data):
+#         user = User.objects.create_user(
+#             validated_data['username'], validated_data['email'], validated_data['password'])
+#         return user
+
+
+class UserSerializer(serializers.ModelSerializer):
+    # password = serializers.CharField(
+    #     max_length=65, min_length=8, write_only=True)
+    # email = serializers.EmailField(max_length=255, min_length=4),
+    # first_name = serializers.CharField(max_length=255, min_length=2)
+    # last_name = serializers.CharField(max_length=255, min_length=2)
+
     class Meta:
         model = User
-        fields = ('id', 'username', 'email', 'password')
-        extra_kwargs = {'password': {'write_only': True}}
+        fields = ['username', 'first_name', 'last_name', 'email', 'password'
+                  ]
+
+    def validate(self, attrs):
+        email = attrs.get('email', '')
+        if User.objects.filter(email=email).exists():
+            raise serializers.ValidationError(
+                {'email': ('Email is already in use')})
+        return super().validate(attrs)
 
     def create(self, validated_data):
-        user = User.objects.create_user(
-            validated_data['username'], validated_data['email'], validated_data['password'])
-        return user
+        return User.objects.create_user(**validated_data)
 
 
-class loginSerializer(serializers.ModelSerializer):
+class LoginSerializer(serializers.ModelSerializer):
+    # password = serializers.CharField(
+    #     max_length=65, min_length=8, write_only=True)
+    # username = serializers.CharField(max_length=255, min_length=2)
+
     class Meta:
         model = User
-        fields = ('username', 'password')
-        extra_kwargs = {'password': {'write_only': True}}
-
+        fields = ['username', 'password']
 
 class ChangePasswordSerializer(serializers.Serializer):
     model = User
@@ -54,6 +79,7 @@ class ChangePasswordSerializer(serializers.Serializer):
     old_password = serializers.CharField(required=True)
     new_password = serializers.CharField(required=True)
 
+#--------------------------------------------------------------------------------------------
 
 class ListSerializer(serializers.ModelSerializer):
     class Meta:

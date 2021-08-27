@@ -2,52 +2,55 @@ from django.db.models.query import QuerySet
 from django.http import response
 from django.shortcuts import redirect, render
 from django.contrib.auth.models import User
-from knox.models import AuthToken
 from rest_framework import generics, permissions, status
 from rest_framework.response import Response
-
 from .serializers import *
-from rest_framework.authtoken.serializers import AuthTokenSerializer
-from knox.views import LoginView as KnoxLoginView
 from rest_framework.views import APIView
 from rest_framework.viewsets import ModelViewSet, ViewSet
 from rest_framework.filters import SearchFilter,OrderingFilter
 from .permissions import IsOwner
+from django.conf import settings
+from django.contrib import auth
+import jwt
 
-from django.contrib.auth import login
-
-
+ # this section is for login, jwt authentication
 
 # Register API
-class RegisterAPI(generics.GenericAPIView):
-    serializer_class = RegisterSerializer
-    queryset = User.objects.all()
-    
-    def get_queryset(self):
-        return User.objects.filter(username=self.request.user)
+class RegisterView(generics.GenericAPIView):
+    serializer_class = UserSerializer
 
-    def post(self, request, *args, **kwargs):
-        serializer = self.get_serializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        user = serializer.save()
-        return Response({
-        "user": UserSerializer(user, context=self.get_serializer_context()).data,
-        "token": AuthToken.objects.create(user)[1]
-        })
+    def post(self, request):
+        serializer = UserSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
+class LoginView(generics.GenericAPIView):
+    serializer_class = LoginSerializer
 
-class LoginAPI(KnoxLoginView):
-    permission_classes = (permissions.AllowAny,)
-    serializer_class = loginSerializer
-    
-    def post(self, request, format=None):
-        serializer = AuthTokenSerializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        user = serializer.validated_data['user']
-        login(request, user)
-        return super(LoginAPI, self).post(request, format=None)
+    def post(self, request):
+        data = request.data
+        username = data.get('username', '')
+        password = data.get('password', '')
+        user = auth.authenticate(username=username, password=password)
 
+        if user:
+            auth_token = jwt.encode(
+                {'username': user.username}, settings.JWT_SECRET_KEY, algorithm="HS256")
+
+            serializer = UserSerializer(user)
+
+            data = {'user': serializer.data, 'token': auth_token}
+
+            return Response(data, status=status.HTTP_200_OK)
+
+            # SEND Response
+        return Response({'detail': 'Invalid credentials'}, status=status.HTTP_401_UNAUTHORIZED)
+
+#---------------------------------------------------------------------------------------------
 
 class UserViewSet(ModelViewSet):
     permission_classes = (permissions.IsAdminUser,)
@@ -129,7 +132,7 @@ class NoteViewSet(ModelViewSet):
 
 
 class RegisterViewSet(ModelViewSet):
-    serializer_class = RegisterSerializer
+    serializer_class = UserSerializer
     queryset = User.objects.all()
 
     def post(self, request):
