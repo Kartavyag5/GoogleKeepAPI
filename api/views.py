@@ -12,20 +12,28 @@ from .permissions import IsOwner
 from django.conf import settings
 from django.contrib import auth
 import jwt
+from rest_framework_simplejwt.tokens import RefreshToken
 
  # this section is for login, jwt authentication
 
 # Register API
 class RegisterView(generics.GenericAPIView):
     serializer_class = UserSerializer
-
     def post(self, request):
-        serializer = UserSerializer(data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        username = request.data['username']
+        password = request.data['password']
+        user = User(username=username)
+        user.set_password(password)
+        user.save()
+        refresh = RefreshToken.for_user(user)
+        return Response(
+            {
+                'status':'success',
+                'user_id':user.id,
+                'refresh':str(refresh),
+                'access':str(refresh.access_token),
+            }
+        )
 
 
 class LoginView(generics.GenericAPIView):
@@ -124,7 +132,7 @@ class ListItemViewSet(ModelViewSet):
 class NoteViewSet(ModelViewSet):
     serializer_class =NoteSerializer
     queryset = Note.objects.all()
-    permission_classes = [IsOwner,permissions.IsAuthenticated]
+    permission_classes = [permissions.IsAuthenticated,]
     filter_backends = [SearchFilter,OrderingFilter]
     search_fields = ['^Title',]
     ordering_fields =['Title','Created_at','Updated_at']
