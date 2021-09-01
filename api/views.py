@@ -6,170 +6,69 @@ from rest_framework import generics, permissions, status
 from rest_framework.response import Response
 from .serializers import *
 from rest_framework.views import APIView
-from rest_framework.viewsets import ModelViewSet, ViewSet
-from rest_framework.filters import SearchFilter,OrderingFilter
+from rest_framework.viewsets import ModelViewSet, ViewSet, GenericViewSet
+
+from rest_framework.filters import SearchFilter, OrderingFilter
 from .permissions import IsOwner
 from django.conf import settings
 from django.contrib import auth
 import jwt
 from rest_framework_simplejwt.tokens import RefreshToken
 
- # this section is for login, jwt authentication
+#---------------------------------start of user Section--------------------------------------------
 
 # Register API
 class RegisterView(generics.GenericAPIView):
     serializer_class = UserSerializer
+
     def post(self, request):
         username = request.data['username']
         password = request.data['password']
-        user = User(username=username)
+        email = request.data['email']
+        
+        user = User(username=username, email=email)
         user.set_password(password)
         user.save()
         refresh = RefreshToken.for_user(user)
         return Response(
             {
-                'status':'success',
-                'user_id':user.id,
-                'refresh':str(refresh),
-                'access':str(refresh.access_token),
+                'status': 'successfully Create a new user!! ',
+                'user_id': user.id,
+                'username': user.username,
+                'email': user.email,
+                'refresh': str(refresh),
+                'access': str(refresh.access_token),
             }
         )
 
-
-class LoginView(generics.GenericAPIView):
-    serializer_class = LoginSerializer
-
-    def post(self, request):
-        data = request.data
-        username = data.get('username', '')
-        password = data.get('password', '')
-        user = auth.authenticate(username=username, password=password)
-
-        if user:
-            auth_token = jwt.encode(
-                {'username': user.username}, settings.JWT_SECRET_KEY, algorithm="HS256")
-
-            serializer = UserSerializer(user)
-
-            data = {'user': serializer.data, 'token': auth_token}
-
-            return Response(data, status=status.HTTP_200_OK)
-
-            # SEND Response
-        return Response({'detail': 'Invalid credentials'}, status=status.HTTP_401_UNAUTHORIZED)
-
-#---------------------------------------------------------------------------------------------
+# show all users
 
 class UserViewSet(ModelViewSet):
-    permission_classes = (permissions.IsAdminUser,)
+    #permission_classes = (permissions.IsAdminUser,)
     queryset = User.objects.all()
     serializer_class = UserSerializer
-    filter_backends = [SearchFilter,OrderingFilter]
+    filter_backends = [SearchFilter, OrderingFilter]
     search_fields = '__all__'
     ordering_fields = '__all__'
 
 
-class ImageListViewSet(ModelViewSet):
-    serializer_class =ImageListSerializer
-    queryset = ImageList.objects.all()
-
-    def list(self, request):
-            
-        ListObj = ImageList.objects.all()
-        Tasks = {}
-        List_obj = []
-        for item in ListObj:
-            Title = item.Title
-            Id = item.id
-            item.Title = []
-            
-            ListItems = Image.objects.filter(ImageList = item.id)
-            for items in ListItems:
-                Tasks.update({'id':items.id, 'Image':str(items.Image),})
-                Tasks_copy = Tasks.copy()
-                
-                item.Title.append(Tasks_copy)
-            List_obj.append({f'id:{Id}-{Title}':item.Title})
-            
-        return Response(List_obj)
-
-
-class ImageViewSet(ModelViewSet):
-    serializer_class =ImageSerializer
-    queryset = Image.objects.all()
-
-    
-class ListViewSet(ModelViewSet):
-    serializer_class =ListSerializer
-    queryset = List.objects.all()
-
-    def list(self, request):
-            
-        ListObj = List.objects.all()
-        Tasks = {}
-        List_obj = []
-        for item in ListObj:
-            Title = item.Title
-            Id = item.id
-            item.Title = []
-            
-            ListItems = ListItem.objects.filter(List = item.id)
-            for items in ListItems:
-                Tasks.update({'id':items.id, 'Task':items.Task, 'done':items.Done})
-                Tasks_copy = Tasks.copy()
-                
-                item.Title.append(Tasks_copy)
-            List_obj.append({f'id:{Id}-{Title}':item.Title})
-            
-        return Response(List_obj)
-
-class ListItemViewSet(ModelViewSet):
-    serializer_class =ListItemsSerializer
-    queryset = ListItem.objects.all()
-
-
-# get all notes created by logged in user
-class NoteViewSet(ModelViewSet):
-    serializer_class =NoteSerializer
-    queryset = Note.objects.all()
-    permission_classes = [permissions.IsAuthenticated,]
-    filter_backends = [SearchFilter,OrderingFilter]
-    search_fields = ['^Title',]
-    ordering_fields =['Title','Created_at','Updated_at']
-
-
-
-class RegisterViewSet(ModelViewSet):
-    serializer_class = UserSerializer
-    queryset = User.objects.all()
-
-    def post(self, request):
-        serializer = self.get_serializer(data = request.data)
-        if(serializer.is_valid()):
-            serializer.save()
-            return Response({
-                
-                "Message": "User created successfully",
-                
-                "User": serializer.data}, status=status.HTTP_201_CREATED
-                )
-        
-        return Response({"Errors": serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
-
+# shows all users with extra details (phone, Image)
 
 class ExtendedUserViewSet(ModelViewSet):
     serializer_class = ExtendeduserSerializer
-    permission_classes = [IsOwner,permissions.IsAuthenticated]
+    #permission_classes = [permissions.IsAuthenticated,]
     queryset = Extendeduser.objects.all()
-    filter_backends = [SearchFilter,OrderingFilter]
-    search_fields = ['^username','^email','^Created_at','^Updated_at']
-    ordering_fields = ['username','Created_at','Updated_at']
+    filter_backends = [SearchFilter, OrderingFilter]
+    search_fields = ['^username', '^email', '^Created_at', '^Updated_at']
+    ordering_fields = ['username', 'Created_at', 'Updated_at']
 
+
+# change password of logged in user
 
 class ChangePasswordView(generics.UpdateAPIView):
     serializer_class = ChangePasswordSerializer
     model = User
-    permission_classes = (IsOwner,)
+    permission_classes = (permissions.IsAuthenticated,)
 
     def get_object(self, queryset=None):
         obj = self.request.user
@@ -197,6 +96,79 @@ class ChangePasswordView(generics.UpdateAPIView):
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+# --------------------------------------end of User section------------------------------------------
 
+
+#-----------------------start of Note Objects section-------------------------------------------
+
+class ImageListViewSet(ModelViewSet):
+    serializer_class = ImageListSerializer
+    queryset = ImageList.objects.all()
+
+    def list(self, request):
+
+        ListObj = ImageList.objects.all()
+        Tasks = {}
+        List_obj = []
+        for item in ListObj:
+            Title = item.Title
+            Id = item.id
+            item.Title = []
+
+            ListItems = Image.objects.filter(ImageList=item.id)
+            for items in ListItems:
+                Tasks.update({'id': items.id, 'Image': str(items.Image), })
+                Tasks_copy = Tasks.copy()
+
+                item.Title.append(Tasks_copy)
+            List_obj.append({f'id:{Id}-{Title}': item.Title})
+
+        return Response(List_obj)
+
+
+class ImageViewSet(ModelViewSet):
+    serializer_class = ImageSerializer
+    queryset = Image.objects.all()
+
+class ListViewSet(ModelViewSet):
+    serializer_class = ListSerializer
+    queryset = List.objects.all()
+
+    def list(self, request):
+        ListObj = List.objects.all()
+        Tasks = {}
+        List_obj = []
+        for item in ListObj:
+            Title = item.Title
+            Id = item.id
+            item.Title = []
+            ListItems = ListItem.objects.filter(List=item.id)
+            for items in ListItems:
+                Tasks.update(
+                    {'id': items.id, 'Task': items.Task, 'done': items.Done})
+                Tasks_copy = Tasks.copy()
+
+                item.Title.append(Tasks_copy)
+            List_obj.append({f'id:{Id}-{Title}': item.Title})
+
+        return Response(List_obj)
+
+
+class ListItemViewSet(ModelViewSet):
+    serializer_class = ListItemsSerializer
+    queryset = ListItem.objects.all()
+
+
+# get all notes created by logged in user
+class NoteViewSet(ModelViewSet):
+    serializer_class = NoteSerializer
+    queryset = Note.objects.all()
+    permission_classes = [IsOwner,]
+    filter_backends = [SearchFilter, OrderingFilter]
+    search_fields = ['^Title', ]
+    ordering_fields = ['Title', 'Created_at', 'Updated_at']
+
+    def perform_create(self, serializer):
+        serializer.save(User=self.request.user)
 
 

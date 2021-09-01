@@ -73,7 +73,7 @@ class ListItem(models.Model):
 
 class Note(models.Model):
     Title = models.CharField(max_length=50)
-    User = models.ForeignKey(User, on_delete=models.CASCADE)
+    User = models.ForeignKey('auth.User',related_name='notes', on_delete=models.CASCADE)
     List = models.ForeignKey(List, on_delete=models.CASCADE)
     ImageList = models.ForeignKey(ImageList, on_delete=models.CASCADE, default=None)
     Labels = models.CharField(max_length=30, null=True)

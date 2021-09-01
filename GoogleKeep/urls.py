@@ -17,7 +17,7 @@ router.register('ImageAPI',views.ImageViewSet, basename='Image')
 
 router.register('UserAPI',views.UserViewSet, basename='User')
 router.register('UserAPI2',views.ExtendedUserViewSet, basename='ExUser')
-router.register('RegisterAPI',views.RegisterViewSet, basename='Register')
+
 
 
 urlpatterns = [
@@ -26,9 +26,9 @@ urlpatterns = [
     path('', include(router.urls)),
     path('api/', include('api.urls')), 
     path('login/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
+    path('register/', views.RegisterView.as_view(), name='register'),
+    path('change-password/', views.ChangePasswordView.as_view(), name='change-password'),
     path('refreshtoken/', TokenRefreshView.as_view(), name='token_refresh'),
     path('verify/', TokenVerifyView.as_view(), name='token_verify'),
    
-    
-    
 ]+ static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
