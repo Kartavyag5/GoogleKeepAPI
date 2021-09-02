@@ -1,5 +1,5 @@
-from django.db.models import fields
-from rest_framework import serializers, fields
+from rest_framework.fields import Field
+from rest_framework import serializers
 from rest_framework import generics, permissions
 from django.contrib.auth.models import User
 from .models import *
@@ -13,9 +13,11 @@ class ImageSerializer(serializers.ModelSerializer):
 # User Serializer for use in extended serializer
 class UserSerializer(serializers.ModelSerializer):
     notes = serializers.PrimaryKeyRelatedField(many=True, queryset=Note.objects.all())
+    lists = serializers.PrimaryKeyRelatedField(many=True, queryset=List.objects.all())
+    image_lists = serializers.PrimaryKeyRelatedField(many=True, queryset=ImageList.objects.all())
     class Meta:
         model = User
-        fields = ('id', 'username', 'email', 'notes')
+        fields = ('id', 'username', 'email', 'notes','lists','image_lists')
         extra_kwargs = {'password': {'write_only': True}}
 
 
@@ -64,6 +66,7 @@ class NoteSerializer(serializers.ModelSerializer):
     User = serializers.ReadOnlyField(source='User.username')
     class Meta:
         model = Note
-        Labels = fields.Field(source='Labels_list')
-        fields = ('id', 'Title', 'Description', 'User', 'List', 'Labels_list',
-                  'ImageList', 'Background_color', 'Reminder', 'Created_at', 'Updated_at')
+        Labels_list = Field(source='Labels_list')
+        fields = ['id', 'Title', 'Description', 'User', 'List', 'Labels_list','Labels',
+                  'ImageList', 'Background_color', 'Reminder', 'Created_at', 'Updated_at']
+        extra_kwargs = {'Labels': {'write_only': True}}

@@ -56,7 +56,7 @@ class UserViewSet(ModelViewSet):
 
 class ExtendedUserViewSet(ModelViewSet):
     serializer_class = ExtendeduserSerializer
-    #permission_classes = [permissions.IsAuthenticated,]
+    permission_classes = [permissions.IsAuthenticated,]
     queryset = Extendeduser.objects.all()
     filter_backends = [SearchFilter, OrderingFilter]
     search_fields = ['^username', '^email', '^Created_at', '^Updated_at']
@@ -167,8 +167,36 @@ class NoteViewSet(ModelViewSet):
     filter_backends = [SearchFilter, OrderingFilter]
     search_fields = ['^Title', ]
     ordering_fields = ['Title', 'Created_at', 'Updated_at']
-
+    
     def perform_create(self, serializer):
         serializer.save(User=self.request.user)
+        
+    def list(self,request):
+        note = Note.objects.filter(User=self.request.user.id)
+        print(note)
+        note_list = []
+        note_obj = {}
+        for items in note:
+            label = items.Labels
+            label_list = label.split(',')
+            note_obj.update({
+                'id' : items.id,
+                'Title' : items.Title,
+                'Description' : items.Description,
+                'user' : self.request.user.username,
+                #'List' : items.List,
+                'Labels' : label_list,
+                #'ImageList' : items.ImageList,
+                'Background_color' : items.Background_color,
+                'Reminder' : items.Reminder,
+                'Created_at' : items.Created_at,
+                'Updated_at' : items.Updated_at,
+            })
+            note_obj_copy = note_obj.copy()
+            note_list.append(note_obj_copy)
+        return Response({f'id:{request.user.id}-{request.user.username}':note_list})
+
+        
+        
 
 

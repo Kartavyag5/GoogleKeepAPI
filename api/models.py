@@ -23,7 +23,6 @@ class Extendeduser(models.Model):
         return f'{self.User}'
 
 
-
 #for choose Background color
 COLOR_CHOICES =[
     ('white','White'),
@@ -44,7 +43,8 @@ def user_directory_path2(instance, filename):
 
 
 class ImageList(models.Model):
-    Title = models.CharField(max_length=30,default='Image-list')
+    User = models.ForeignKey('auth.User', related_name='image_lists', on_delete=models.CASCADE, default='1')
+    Title = models.CharField(max_length=30, default='Image-list')
 
     def __str__(self):
         return f'{self.Title}'
@@ -57,7 +57,8 @@ class Image(models.Model):
         return f'{self.ImageList}: {self.Image}'
 
 class List(models.Model):
-    Title = models.CharField(max_length=30,default='Task-list')
+    User = models.ForeignKey('auth.User', related_name='lists', on_delete=models.CASCADE, default='1')
+    Title = models.CharField(max_length=30, default='Task-list')
     
     def __str__(self):
         return f'{self.Title}'
@@ -79,7 +80,7 @@ class Note(models.Model):
     Labels = models.CharField(max_length=30, null=True)
     Background_color = models.CharField(max_length=20, choices=COLOR_CHOICES, default='white')
     Description = models.TextField()
-    Reminder = models.DateTimeField(default=None, null=True)
+    Reminder = models.DateTimeField(default=None, blank=True)
     Created_at = models.DateTimeField(auto_now_add=True)
     Updated_at = models.DateTimeField(auto_now=True)
 
