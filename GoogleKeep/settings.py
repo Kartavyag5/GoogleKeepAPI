@@ -154,8 +154,7 @@ REST_FRAMEWORK = {
 
 
 SIMPLE_JWT = {
-    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=30),
+    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=120),
     'ROTATE_REFRESH_TOKENS': True,
 }
 
-JWT_SECRET_KEY = os.environ.get('JWT_SECRET_KEY')

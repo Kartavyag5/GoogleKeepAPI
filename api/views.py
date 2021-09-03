@@ -1,23 +1,17 @@
-from django.db.models.query import QuerySet
-from django.http import response
-from django.shortcuts import redirect, render
 from django.contrib.auth.models import User
 from rest_framework import generics, permissions, status
 from rest_framework.response import Response
 from .serializers import *
-from rest_framework.views import APIView
-from rest_framework.viewsets import ModelViewSet, ViewSet, GenericViewSet
-
+from rest_framework.viewsets import ModelViewSet
 from rest_framework.filters import SearchFilter, OrderingFilter
-from .permissions import IsOwner
-from django.conf import settings
-from django.contrib import auth
-import jwt
+
 from rest_framework_simplejwt.tokens import RefreshToken
 
-#---------------------------------start of user Section--------------------------------------------
+# ---------------------------------start of user Section--------------------------------------------
 
 # Register API
+
+
 class RegisterView(generics.GenericAPIView):
     serializer_class = UserSerializer
 
@@ -25,7 +19,7 @@ class RegisterView(generics.GenericAPIView):
         username = request.data['username']
         password = request.data['password']
         email = request.data['email']
-        
+
         user = User(username=username, email=email)
         user.set_password(password)
         user.save()
@@ -43,8 +37,9 @@ class RegisterView(generics.GenericAPIView):
 
 # show all users
 
+
 class UserViewSet(ModelViewSet):
-    #permission_classes = (permissions.IsAdminUser,)
+    permission_classes = (permissions.IsAuthenticated|permissions.IsAdminUser,)
     queryset = User.objects.all()
     serializer_class = UserSerializer
     filter_backends = [SearchFilter, OrderingFilter]
@@ -56,7 +51,7 @@ class UserViewSet(ModelViewSet):
 
 class ExtendedUserViewSet(ModelViewSet):
     serializer_class = ExtendeduserSerializer
-    permission_classes = [permissions.IsAuthenticated,]
+    permission_classes = [permissions.IsAuthenticated, ]
     queryset = Extendeduser.objects.all()
     filter_backends = [SearchFilter, OrderingFilter]
     search_fields = ['^username', '^email', '^Created_at', '^Updated_at']
@@ -99,15 +94,19 @@ class ChangePasswordView(generics.UpdateAPIView):
 # --------------------------------------end of User section------------------------------------------
 
 
-#-----------------------start of Note Objects section-------------------------------------------
+# -----------------------start of Note Objects section-------------------------------------------
 
 class ImageListViewSet(ModelViewSet):
     serializer_class = ImageListSerializer
     queryset = ImageList.objects.all()
 
-    def list(self, request):
+    def perform_create(self, serializer):
+        serializer.save(User=self.request.user)
 
-        ListObj = ImageList.objects.all()
+    def list(self, request):
+        ListObj = ImageList.objects.filter(User=self.request.user.id)
+        if ListObj.count() == 0:
+            return Response({'msg': 'user did not create any list / No User logged in'})
         Tasks = {}
         List_obj = []
         for item in ListObj:
@@ -130,12 +129,18 @@ class ImageViewSet(ModelViewSet):
     serializer_class = ImageSerializer
     queryset = Image.objects.all()
 
+
 class ListViewSet(ModelViewSet):
     serializer_class = ListSerializer
     queryset = List.objects.all()
 
+    def perform_create(self, serializer):
+        serializer.save(User=self.request.user)
+
     def list(self, request):
-        ListObj = List.objects.all()
+        ListObj = List.objects.filter(User=self.request.user.id)
+        if ListObj.count() == 0:
+            return Response({'msg': 'user did not create any list / No User logged in'})
         Tasks = {}
         List_obj = []
         for item in ListObj:
@@ -163,40 +168,37 @@ class ListItemViewSet(ModelViewSet):
 class NoteViewSet(ModelViewSet):
     serializer_class = NoteSerializer
     queryset = Note.objects.all()
-    permission_classes = [IsOwner,]
+    permission_classes = [permissions.IsAuthenticated,]
     filter_backends = [SearchFilter, OrderingFilter]
     search_fields = ['^Title', ]
     ordering_fields = ['Title', 'Created_at', 'Updated_at']
-    
+
     def perform_create(self, serializer):
         serializer.save(User=self.request.user)
-        
-    def list(self,request):
+
+    #this function will show only data created by user
+    def list(self, request):
         note = Note.objects.filter(User=self.request.user.id)
-        print(note)
+        if note.count() == 0:
+            return Response({'msg': 'user did not create any list / No User logged in'})
         note_list = []
         note_obj = {}
         for items in note:
             label = items.Labels
             label_list = label.split(',')
             note_obj.update({
-                'id' : items.id,
-                'Title' : items.Title,
-                'Description' : items.Description,
-                'user' : self.request.user.username,
-                #'List' : items.List,
-                'Labels' : label_list,
-                #'ImageList' : items.ImageList,
-                'Background_color' : items.Background_color,
-                'Reminder' : items.Reminder,
-                'Created_at' : items.Created_at,
-                'Updated_at' : items.Updated_at,
+                'id': items.id,
+                'Title': items.Title,
+                'Description': items.Description,
+                'user': str(items.User),
+                'List' : str(items.List),
+                'Labels': label_list,
+                'ImageList' : str(items.ImageList),
+                'Background_color': items.Background_color,
+                'Reminder': items.Reminder,
+                'Created_at': items.Created_at,
+                'Updated_at': items.Updated_at,
             })
             note_obj_copy = note_obj.copy()
             note_list.append(note_obj_copy)
-        return Response({f'id:{request.user.id}-{request.user.username}':note_list})
-
-        
-        
-
-
+        return Response({f'id:{request.user.id}-{request.user.username}': note_list})
