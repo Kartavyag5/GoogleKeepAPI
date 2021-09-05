@@ -13,7 +13,7 @@ def user_directory_path(instance, filename):
 
 
 class Extendeduser(models.Model):
-    User = models.ForeignKey(User,on_delete=models.CASCADE)
+    User = models.ForeignKey(User,related_name='Extra_details',on_delete=models.CASCADE)
     Profile = models.ImageField(upload_to=user_directory_path, default='notes/default.jpg')
     Phone = models.CharField(max_length=15)
     Created_at = models.DateTimeField(auto_now_add=True)
@@ -83,9 +83,9 @@ class Note(models.Model):
     Title = models.CharField(max_length=50, blank=True)
     User = models.ForeignKey(
         'auth.User', related_name='notes', on_delete=models.CASCADE)
-    List = models.ForeignKey(List, on_delete=models.CASCADE, blank=True)
+    List = models.ForeignKey(List, on_delete=models.CASCADE, default=None, null=True, blank=True)
     ImageList = models.ForeignKey(
-        ImageList, on_delete=models.CASCADE, default=None, blank=True)
+        ImageList, on_delete=models.CASCADE, default=None, null=True, blank=True)
     Labels = models.CharField(max_length=30, null=True)
     Background_color = models.CharField(
         max_length=20, choices=COLOR_CHOICES, default='white', blank=True)

@@ -23,7 +23,7 @@ urlpatterns = [
     path('', include(router.urls)),
     path('login/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
     path('register/', views.RegisterView.as_view(), name='register'),
-    path('change-password/', views.ChangePasswordView.as_view(), name='change-password'),
+    path('ChangePassword/', views.ChangePasswordView.as_view(), name='change-password'),
     path('refreshtoken/', TokenRefreshView.as_view(), name='token_refresh'),
     path('verify/', TokenVerifyView.as_view(), name='token_verify'),
    

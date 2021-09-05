@@ -19,21 +19,24 @@ class UserSerializer(serializers.ModelSerializer):
         many=True, queryset=List.objects.all())
     image_lists = serializers.PrimaryKeyRelatedField(
         many=True, queryset=ImageList.objects.all())
+    Extra_details = serializers.PrimaryKeyRelatedField(
+        many=True, queryset=Extendeduser.objects.all())
 
     class Meta:
         model = User
-        fields = ('id', 'username', 'email', 'notes',
-                  'Task_lists', 'image_lists')
+        fields = ('id', 'username', 'email','Extra_details', 'notes',
+                  'Task_lists', 'image_lists',)
         extra_kwargs = {'password': {'write_only': True}}
 
 
 # this model is for adding more fields in Django User model
 class ExtendeduserSerializer(serializers.ModelSerializer):
-    User = UserSerializer(read_only=True)
+    #User = UserSerializer(read_only=True)
 
     class Meta:
         model = Extendeduser
         fields = ('User', 'Phone', 'Profile', 'Created_at', 'Updated_at')
+
 
 
 # Serializer for password change endpoint.
