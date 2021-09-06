@@ -149,6 +149,20 @@ class ImageViewSet(ModelViewSet):
     serializer_class = ImageSerializer
     queryset = Image.objects.all()
 
+    def get_queryset(self):
+        queryset = self.queryset
+        list_user = ImageList.objects.filter(User=self.request.user.id).values_list('id',flat=True)
+        
+        if self.request.user.id == 18:
+            query_set = queryset.all()
+        else:    
+            query_set = queryset.filter(ImageList=list_user.first())
+
+        if query_set.count()==0:
+            raise ValidationError(detail="Logged user has no Images Created")
+
+        return query_set
+
 
 class ListViewSet(ModelViewSet):
     serializer_class = ListSerializer
@@ -191,6 +205,20 @@ class ListViewSet(ModelViewSet):
 class ListItemViewSet(ModelViewSet):
     serializer_class = ListItemsSerializer
     queryset = ListItem.objects.all()
+
+    def get_queryset(self):
+        queryset = self.queryset
+        list_user = List.objects.filter(User=self.request.user.id).values_list('id',flat=True)
+        
+        if self.request.user.id == 18:
+            query_set = queryset.all()
+        else:    
+            query_set = queryset.filter(List=list_user.first())
+
+        if query_set.count()==0:
+            raise ValidationError(detail="Logged user has no List Created")
+
+        return query_set
 
 
 # get all notes created by logged in user

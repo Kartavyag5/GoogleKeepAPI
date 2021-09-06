@@ -35,7 +35,7 @@ class ExtendeduserSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Extendeduser
-        fields = ('User', 'Phone', 'Profile', 'Created_at', 'Updated_at')
+        fields = ('id','Phone', 'Profile', 'Created_at', 'Updated_at')
 
 
 
