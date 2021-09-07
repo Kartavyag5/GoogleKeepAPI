@@ -55,7 +55,7 @@ class UserViewSet(ModelViewSet):
 
 class ExtendedUserViewSet(ModelViewSet):
     serializer_class = ExtendeduserSerializer
-    #permission_classes = [permissions.IsAuthenticated, ]
+    permission_classes = [permissions.IsAuthenticated, ]
     queryset = Extendeduser.objects.all()
     filter_backends = [SearchFilter, OrderingFilter]
     search_fields = ['^username', '^email', '^Created_at', '^Updated_at']
@@ -69,7 +69,7 @@ class ExtendedUserViewSet(ModelViewSet):
             query_set = queryset.filter(User=self.request.user.id)
 
         if query_set.count()==0:
-            raise ValidationError(detail="Logged user has no Extra Details")
+            raise ValidationError(detail="Logged user has no Extra Details / no Logged in")
 
         return query_set
 
@@ -114,6 +114,7 @@ class ChangePasswordView(generics.UpdateAPIView):
 class ImageListViewSet(ModelViewSet):
     serializer_class = ImageListSerializer
     queryset = ImageList.objects.all()
+    permission_classes = (permissions.IsAuthenticated,)
 
     def perform_create(self, serializer):
         serializer.save(User=self.request.user)
@@ -148,25 +149,28 @@ class ImageListViewSet(ModelViewSet):
 class ImageViewSet(ModelViewSet):
     serializer_class = ImageSerializer
     queryset = Image.objects.all()
+    permission_classes = (permissions.IsAuthenticated,)
 
     def get_queryset(self):
         queryset = self.queryset
-        list_user = ImageList.objects.filter(User=self.request.user.id).values_list('id',flat=True)
+        list_user = ImageList.objects.filter(User=self.request.user.id)
         
         if self.request.user.id == 18:
             query_set = queryset.all()
         else:    
-            query_set = queryset.filter(ImageList=list_user.first())
+            for items in list_user:
+                query_set = queryset.filter(ImageList=items.id)
+                if query_set.count()==0:
+                    raise ValidationError(detail="Logged user has no Images Created / no user logged in.")
+                return query_set
 
-        if query_set.count()==0:
-            raise ValidationError(detail="Logged user has no Images Created")
 
-        return query_set
 
 
 class ListViewSet(ModelViewSet):
     serializer_class = ListSerializer
     queryset = List.objects.all()
+    permission_classes = (permissions.IsAuthenticated,)
 
     def perform_create(self, serializer):
         serializer.save(User=self.request.user)
@@ -205,20 +209,23 @@ class ListViewSet(ModelViewSet):
 class ListItemViewSet(ModelViewSet):
     serializer_class = ListItemsSerializer
     queryset = ListItem.objects.all()
+    permission_classes = (permissions.IsAuthenticated,)
 
     def get_queryset(self):
         queryset = self.queryset
-        list_user = List.objects.filter(User=self.request.user.id).values_list('id',flat=True)
+        list_user = List.objects.filter(User=self.request.user.id)
+        print(list_user)
         
         if self.request.user.id == 18:
             query_set = queryset.all()
+            return query_set
         else:    
-            query_set = queryset.filter(List=list_user.first())
-
-        if query_set.count()==0:
-            raise ValidationError(detail="Logged user has no List Created")
-
-        return query_set
+            for items in list_user:
+                query_set = queryset.filter(List=items.id)
+        
+                if query_set.count()==0:
+                    raise ValidationError(detail="Logged user has no List Created")
+                return query_set
 
 
 # get all notes created by logged in user

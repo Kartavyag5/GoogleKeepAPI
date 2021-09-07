@@ -23,17 +23,6 @@ class Extendeduser(models.Model):
         return f'{self.User}'
 
 
-# for choose Background color
-COLOR_CHOICES = [
-    ('white', 'White'),
-    ('red', 'Red'),
-    ('orange', 'Orange'),
-    ('yellow', 'Yellow'),
-    ('green', 'Green'),
-    ('blue', 'Blue'),
-    ('purple', 'Purple'),
-    ('black', 'Black')
-]
 
 
 # this is for image rename
@@ -78,6 +67,17 @@ class ListItem(models.Model):
     def __str__(self):
         return f'{self.List}: {self.Task}'
 
+# for choose Background color in Note model
+COLOR_CHOICES = [
+    ('white', 'White'),
+    ('red', 'Red'),
+    ('orange', 'Orange'),
+    ('yellow', 'Yellow'),
+    ('green', 'Green'),
+    ('blue', 'Blue'),
+    ('purple', 'Purple'),
+    ('black', 'Black')
+]
 
 class Note(models.Model):
     Title = models.CharField(max_length=50, blank=True)
