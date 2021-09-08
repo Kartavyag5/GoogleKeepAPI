@@ -153,17 +153,17 @@ class ImageViewSet(ModelViewSet):
 
     def get_queryset(self):
         queryset = self.queryset
-        list_user = ImageList.objects.filter(User=self.request.user.id)
-        
+        # if user is admin.
         if self.request.user.id == 18:
             query_set = queryset.all()
+            
         else:    
-            for items in list_user:
-                query_set = queryset.filter(ImageList=items.id)
-                if query_set.count()==0:
-                    raise ValidationError(detail="Logged user has no Images Created / no user logged in.")
-                return query_set
+            query_set = queryset.filter(User=self.request.user.id)
+            
+        if query_set.count()==0:
+            raise ValidationError(detail="Logged user has not create any Image yet")
 
+        return query_set
 
 
 
@@ -213,19 +213,16 @@ class ListItemViewSet(ModelViewSet):
 
     def get_queryset(self):
         queryset = self.queryset
-        list_user = List.objects.filter(User=self.request.user.id)
-        print(list_user)
-        
+        # if user is admin.
         if self.request.user.id == 18:
             query_set = queryset.all()
-            return query_set
         else:    
-            for items in list_user:
-                query_set = queryset.filter(List=items.id)
-        
-                if query_set.count()==0:
-                    raise ValidationError(detail="Logged user has no List Created")
-                return query_set
+            query_set = queryset.filter(User=self.request.user.id)
+
+        if query_set.count()==0:
+            raise ValidationError(detail="Logged user has not create any Note yet")
+
+        return query_set
 
 
 # get all notes created by logged in user

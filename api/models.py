@@ -27,7 +27,7 @@ class Extendeduser(models.Model):
 
 # this is for image rename
 def user_directory_path2(instance, filename):
-    new_filename = "images/Note_%s" % (instance.Image)
+    new_filename = "images/Image_%s" % (instance.Image)
     return new_filename
 
 
@@ -41,13 +41,14 @@ class ImageList(models.Model):
 
 
 class Image(models.Model):
+    User = models.ForeignKey('auth.User', on_delete=models.CASCADE,default=None, null=True, blank=True)
     ImageList = models.ForeignKey(
         ImageList, on_delete=models.CASCADE, default=None)
     Image = models.ImageField(
         upload_to=user_directory_path2, default='notes/default.jpg')
 
     def __str__(self):
-        return f'{self.ImageList}: {self.Image}'
+        return f'{self.ImageList}_{self.Image}'
 
 
 class List(models.Model):
@@ -60,12 +61,13 @@ class List(models.Model):
 
 
 class ListItem(models.Model):
+    User = models.ForeignKey('auth.User', on_delete=models.CASCADE,default=None, null=True, blank=True)
     List = models.ForeignKey(List, on_delete=models.CASCADE, default=None)
     Task = models.CharField(max_length=30, default='task')
     Done = models.BooleanField(default=False)
 
     def __str__(self):
-        return f'{self.List}: {self.Task}'
+        return f'{self.List}_{self.Task}'
 
 # for choose Background color in Note model
 COLOR_CHOICES = [
