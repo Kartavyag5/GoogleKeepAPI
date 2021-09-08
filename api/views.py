@@ -150,6 +150,9 @@ class ImageViewSet(ModelViewSet):
     serializer_class = ImageSerializer
     queryset = Image.objects.all()
     permission_classes = (permissions.IsAuthenticated,)
+    
+    def perform_create(self, serializer):
+        serializer.save(User=self.request.user)
 
     def get_queryset(self):
         queryset = self.queryset
@@ -210,6 +213,9 @@ class ListItemViewSet(ModelViewSet):
     serializer_class = ListItemsSerializer
     queryset = ListItem.objects.all()
     permission_classes = (permissions.IsAuthenticated,)
+
+    def perform_create(self, serializer):
+        serializer.save(User=self.request.user)
 
     def get_queryset(self):
         queryset = self.queryset

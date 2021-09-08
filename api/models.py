@@ -35,6 +35,8 @@ class ImageList(models.Model):
     User = models.ForeignKey(
         'auth.User', related_name='image_lists', on_delete=models.CASCADE, default='1')
     Title = models.CharField(max_length=30, default='Image-list')
+    Created_at = models.DateTimeField(auto_now_add=True)
+    Updated_at = models.DateTimeField(auto_now=True)
 
     def __str__(self):
         return f'{self.Title}'
@@ -46,6 +48,8 @@ class Image(models.Model):
         ImageList, on_delete=models.CASCADE, default=None)
     Image = models.ImageField(
         upload_to=user_directory_path2, default='notes/default.jpg')
+    Created_at = models.DateTimeField(auto_now_add=True)
+    Updated_at = models.DateTimeField(auto_now=True)
 
     def __str__(self):
         return f'{self.ImageList}_{self.Image}'
@@ -55,6 +59,8 @@ class List(models.Model):
     User = models.ForeignKey(
         'auth.User', related_name='Task_lists', on_delete=models.CASCADE, default='1')
     Title = models.CharField(max_length=30, default='Task-list')
+    Created_at = models.DateTimeField(auto_now_add=True)
+    Updated_at = models.DateTimeField(auto_now=True)
 
     def __str__(self):
         return f'{self.Title}'
@@ -65,6 +71,8 @@ class ListItem(models.Model):
     List = models.ForeignKey(List, on_delete=models.CASCADE, default=None)
     Task = models.CharField(max_length=30, default='task')
     Done = models.BooleanField(default=False)
+    Created_at = models.DateTimeField(auto_now_add=True)
+    Updated_at = models.DateTimeField(auto_now=True)
 
     def __str__(self):
         return f'{self.List}_{self.Task}'

@@ -51,26 +51,26 @@ class ChangePasswordSerializer(serializers.Serializer):
 class ListSerializer(serializers.ModelSerializer):
     class Meta:
         model = List
-        fields = ('id', 'Title',)
+        fields = ('id', 'Title','User', 'Created_at', 'Updated_at')
 
 
 class ListItemsSerializer(serializers.ModelSerializer):
     class Meta:
         model = ListItem
-        fields = ('List', 'id', 'Task', 'Done')
+        fields = ('List', 'id', 'Task', 'Done','User', 'Created_at', 'Updated_at')
 
 
 class ImageListSerializer(serializers.ModelSerializer):
     class Meta:
         model = ImageList
-        fields = ('id', 'Title',)
+        fields = ('id', 'Title','User', 'Created_at', 'Updated_at')
 
 
 class ImageSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Image
-        fields = ('id','ImageList', 'Image')
+        fields = ('id','ImageList','User', 'Image', 'Created_at', 'Updated_at')
 
 
 class NoteSerializer(serializers.ModelSerializer):
